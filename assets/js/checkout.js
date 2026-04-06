@@ -5,7 +5,8 @@
 
 const I18N = {
     km: {
-        timer_hint: "សូមបង់ប្រាក់ក្នុងកំឡុងពេលនេះ ប្រព័ន្ធនឹងទូទាត់ដោយស្វ័យប្រវត្ត",
+        timer_hint: "ពេលវេលានៅសល់មុនពេលការបញ្ជាទិញផុតកំណត់",
+
         placeholder_title: "សូមជ្រើសរើសធនាគារបង់ប្រាក់របស់អ្នក",
         placeholder_desc: "សូមជ្រើសរើសធនាគារដើម្បីបង្ហាញកូដបង់ប្រាក់",
         instruction: "អ្នកអាចស្កេនកូដបង់ប្រាក់ ឬចម្លងគណនីផ្ទេរប្រាក់ដោយដៃ",
@@ -39,7 +40,8 @@ const I18N = {
         help_img: "/assets/img/topup_hint_km.jpg"
     },
     en: {
-        timer_hint: "Please pay within this time, system will auto-credit",
+        timer_hint: "Time remaining until order expires",
+
         placeholder_title: "Select your payment bank",
         placeholder_desc: "Select a bank to show payment QR",
         instruction: "Scan QR code or copy account for manual transfer",
@@ -73,7 +75,8 @@ const I18N = {
         help_img: "/assets/img/topup_hint_en.jpg"
     },
     zh: {
-        timer_hint: "请在规定时间内完成支付",
+        timer_hint: "距离订单失效时间",
+
         placeholder_title: "请选择支付银行",
         placeholder_desc: "选择银行以显示付款二维码",
         instruction: "您可扫码支付，或复制账号手动转账",
@@ -287,6 +290,7 @@ function updateTimerVisuals(remainingSeconds) {
         const offset = (remainingSeconds / total) * dashArray;
         strokeEl.setAttribute('stroke-dasharray', `${offset}, 100`);
     }
+
 
     if (textEl) {
         const m = Math.floor(remainingSeconds / 60);
