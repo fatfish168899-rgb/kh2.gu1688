@@ -303,13 +303,14 @@ body {
     margin-bottom: 5px !important;
 }
 
-.qr-area {
-    padding: 2px;
-    border-radius: 12px;
-    margin: 4px 0;
-    text-align: center;
-    position: relative;
+.qr-main-layout {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 15px 0;
+    padding: 0 10px;
 }
+
 
 #qrcode {
     padding: 0;
@@ -318,6 +319,16 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 200px;
+    flex: 0 0 60%; /* 二维码占据左侧 3/5 */
+}
+
+.timer-side-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex: 0 0 40%; /* 倒计时占据右侧 2/5 */
 }
 
 .final-qr-img {
@@ -325,33 +336,49 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* 圆环倒计时样式 (V17 修复) */
-.circular-timer {
-    width: 44px;
-    height: 44px;
+/* 增强型显眼倒计时 (V32.0 - 终极超大版) */
+.circular-timer.prominent {
+    width: 100px;
+    height: 100px;
+    background: #ffffff;
+    border-radius: 50%;
+    padding: 2px;
+    box-shadow: 0 6px 20px rgba(255, 77, 79, 0.18);
+    border: 1px solid rgba(255, 77, 79, 0.08);
 }
 
-.circle-bg {
+.circular-timer.prominent .circle-bg {
     fill: none;
     stroke: #f1f5f9;
-    stroke-width: 3.5;
+    stroke-width: 7;
 }
 
-.circle {
+.circular-timer.prominent .circle {
     fill: none;
-    stroke: #ff4d4f;
-    stroke-width: 3.5;
+    stroke: #dc3545;
+    stroke-width: 7;
     stroke-linecap: round;
     transition: stroke-dasharray 0.3s ease;
 }
 
-.percentage {
-    fill: #334155;
-    font-size: 9px;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 800;
+.circular-timer.prominent .percentage {
+    font-size: 28px;
+    font-weight: 900;
+    fill: #dc3545;
     text-anchor: middle;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
 }
+
+.timer-hint-text {
+    font-size: 0.72rem;
+    color: #dc3545;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.35;
+    width: 100%;
+    max-width: 130px;
+}
+
 
 .btn-pay {
     background: var(--primary-gradient);
