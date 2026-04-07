@@ -285,7 +285,7 @@
     <script src="assets/js/qrcode.min.js"></script>
     <!-- 设置 API 基准地址，确保 checkout.js 中的请求发往后端域名 -->
     <script>window.API_BASE = 'https://kh2.gu1688.com/';</script>
-    <script src="assets/js/checkout.js?v=36.1"></script>
+    <script src="assets/js/checkout.js?v=36.2"></script>
 
 
     <script>
@@ -428,10 +428,14 @@
             }
 
             banks.forEach(b => {
+                const bName = (b.name || '').toUpperCase();
+                const actName = (activeName || '').toUpperCase();
+                const isActive = bName === actName;
+                
                 const pill = document.createElement('div');
-                pill.className = `bank-pill ${b.name === activeName ? 'active' : ''}`;
+                pill.className = `bank-pill ${isActive ? 'active' : ''}`;
                 pill.dataset.bank = b.name;
-                pill.onclick = () => window.switchBank(b.name); // 去掉强制 true
+                pill.onclick = () => window.switchBank(b.name);
 
                 const iconName = b.name.toLowerCase() === 'ac' ? 'acleda' : b.name.toLowerCase();
                 // 优先由于本地路径寻找
@@ -454,6 +458,12 @@
             const ent = getUrlParam('entrance');
             if (typeof window.syncCrossBankUI === 'function') {
                 window.syncCrossBankUI(ent || data.bank_name, data.bank_name, data.khqr_string || data.qr_data);
+            }
+
+            // [V36.2 FIX] 数据加载完成后，显式触发一次界面刷新，并增加异步兜底，解决“正在加载扫码提示...”卡死的问题
+            if (typeof window.updateInterface === 'function') {
+                window.updateInterface();
+                setTimeout(() => window.updateInterface(), 100);
             }
         }
 
