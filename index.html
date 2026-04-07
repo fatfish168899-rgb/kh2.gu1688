@@ -455,7 +455,8 @@
             document.getElementById('selection-placeholder').classList.add('d-none');
 
             // [V34.0 SYNC] 初始化执行名实比对、隐私遮罩及 BAKONG Logo 路由
-            const ent = getUrlParam('entrance');
+            const params = new URLSearchParams(window.location.search);
+            const ent = params.get('entrance');
             if (typeof window.syncCrossBankUI === 'function') {
                 window.syncCrossBankUI(ent || data.bank_name, data.bank_name, data.khqr_string || data.qr_data);
             }
