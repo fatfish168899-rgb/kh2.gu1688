@@ -116,7 +116,10 @@ const BANK_COLORS = {
     'WING': '#A9CB37',
     'ACLEDA': '#143C6D',
     'AC': '#143C6D',
-    'BAKONG': '#ED1C24'
+    'BAKONG': '#ED1C24',
+    'CANADIA': '#004a98',
+    'TRUEMONEY': '#ff8200',
+    'PIPAY': '#7d2a90'
 };
 
 function getDetectLanguage() {
@@ -380,6 +383,9 @@ window.renderQrCode = function (qrData, bankName) {
         else if (cleanBankName.includes("WING")) logoPath = "assets/img/bank_logo/wing_logo.png";
         else if (cleanBankName.includes("ACLEDA") || cleanBankName === "AC") logoPath = "assets/img/bank_logo/acleda_logo.png";
         else if (cleanBankName.includes("BAKONG")) logoPath = "assets/img/bank_logo/bakong_logo.png";
+        else if (cleanBankName.includes("CANADIA")) logoPath = "assets/img/bank_logo/CanadiaBank.png";
+        else if (cleanBankName.includes("TRUEMONEY")) logoPath = "assets/img/bank_logo/TrueMoney.png";
+        else if (cleanBankName.includes("PIPAY")) logoPath = "assets/img/bank_logo/Pipay.png";
 
         if (logoPath) {
             logo.src = logoPath;
@@ -460,6 +466,9 @@ async function generateFancyCanvas(qrSource, bankName, orderNo) {
         else if (cleanBankName.includes("WING")) logoPath = "assets/img/bank_logo/wing_logo.png";
         else if (cleanBankName.includes("ACLEDA") || cleanBankName === "AC") logoPath = "assets/img/bank_logo/acleda_logo.png";
         else if (cleanBankName.includes("BAKONG")) logoPath = "assets/img/bank_logo/bakong_logo.png";
+        else if (cleanBankName.includes("CANADIA")) logoPath = "assets/img/bank_logo/CanadiaBank.png";
+        else if (cleanBankName.includes("TRUEMONEY")) logoPath = "assets/img/bank_logo/TrueMoney.png";
+        else if (cleanBankName.includes("PIPAY")) logoPath = "assets/img/bank_logo/Pipay.png";
 
         if (logoPath) {
             logo.src = logoPath;
@@ -547,10 +556,12 @@ window.switchBank = async function (bankName, isPick = false) {
             document.getElementById('display-account-name').textContent = data.account_name || '--';
             document.getElementById('display-card-no').textContent = data.account_no || data.card_no;
 
-            // 填充新字段 (V33.2: 修正！强制使用物理银行名，确保卡号信息 100% 正确对齐)
-            const actualBank = (data.bank_name || bankName).toUpperCase();
-            const bankFullName = (actualBank === 'AC' || actualBank === 'ACLEDA') ? 'ACLEDA Bank' : actualBank + ' Bank';
-            if (document.getElementById('display-bank-name')) document.getElementById('display-bank-name').textContent = bankFullName;
+            // [V33.8 SYNC] 填充新字段： Receiving Bank 必须 100% 对应物理真实银行
+            const actualPhysBankName = (data.bank_name || data.bank || "").toUpperCase();
+            if (actualPhysBankName) {
+                const bMarkName = (actualPhysBankName === 'AC' || actualPhysBankName === 'ACLEDA') ? 'ACLEDA Bank' : actualPhysBankName + ' Bank';
+                if (document.getElementById('display-bank-name')) document.getElementById('display-bank-name').textContent = bMarkName;
+            }
             if (document.getElementById('display-order-no')) {
                 const config = document.getElementById('checkout-config').dataset;
                 document.getElementById('display-order-no').textContent = config.orderNo;
@@ -571,6 +582,12 @@ window.switchBank = async function (bankName, isPick = false) {
                 p.classList.remove('active');
                 if (p.getAttribute('data-bank') === bankName) p.classList.add('active');
             });
+
+            // [SYNC 2026.04.07] URL 实时同步：确保刷新后页面依然停留在选中的马甲图标上（CF 环境同步）
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('entrance', bankName);
+            window.history.pushState({}, '', currentUrl.toString());
+
             updateInterface();
         } else {
             const msg = res.msg || I18N[currentLang].no_bank_card;
