@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/checkout.css?v=32.3" rel="stylesheet">
+    <link href="assets/css/checkout.css?v=32.5" rel="stylesheet">
 
     <style>
         #qrcode {
@@ -83,6 +83,16 @@
                 opacity: 0.6;
             }
         }
+
+        /* [V36.11] 手势引导：向上跳动动画 */
+        @keyframes gesturePoint {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .animate-gesture {
+            animation: gesturePoint 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+            display: inline-block;
+        }
     </style>
 </head>
 
@@ -155,7 +165,7 @@
 
             <div class="selection-placeholder p-4 text-center" id="selection-placeholder">
                 <div class="icon-circle mb-3 mx-auto">
-                    <i class="fa-solid fa-hand-pointer fa-2x text-primary"></i>
+                    <i class="fa-solid fa-hand-pointer fa-2x text-primary animate-gesture"></i>
                 </div>
                 <h5 class="fw-bold mb-1" data-i18n="placeholder_title">请选择您的支付银行</h5>
                 <p class="text-muted small" data-i18n="placeholder_desc">请选择银行以显示付款码</p>
