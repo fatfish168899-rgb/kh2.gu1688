@@ -66,8 +66,23 @@
             }
         }
 
-        .pulsate-light { animation: pulsate 1.5s ease-out infinite; }
-        @keyframes pulsate { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .pulsate-light {
+            animation: pulsate 1.5s ease-out infinite;
+        }
+
+        @keyframes pulsate {
+            0% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.6;
+            }
+        }
     </style>
 </head>
 
@@ -185,7 +200,9 @@
                 </div>
 
                 <!-- [V33.9 NEW] 跨行支付免手续费提示 -->
-                <div id="cross-bank-fee-hint" class="mt-2 p-2 rounded-4 bg-success bg-opacity-10 border border-success-subtle text-success text-center d-none" style="font-size: 0.85rem;">
+                <div id="cross-bank-fee-hint"
+                    class="mt-2 p-2 rounded-4 bg-success bg-opacity-10 border border-success-subtle text-success text-center d-none"
+                    style="font-size: 0.85rem;">
                     <i class="fa-solid fa-circle-check me-2 pulsate-light"></i>
                     <span class="fw-bold" data-i18n="cross_bank_fee_free">跨行扫码免手续费 / 0 Fee for Cross-bank KHQR</span>
                 </div>
@@ -405,7 +422,7 @@
             container.innerHTML = '';
             if (!banks || banks.length === 0) {
                 container.innerHTML = `<div class="p-4 text-center w-100 text-muted" style="grid-column: span 4; font-size: 0.85rem;" data-i18n="no_bank_card">
-                    <i class="fa-solid fa-circle-exclamation me-1"></i> 暂无可用银行，请稍后再试
+                    <i class="fa-solid fa-circle-exclamation me-1"></i> No account for this bank, please choose another
                 </div>`;
                 return;
             }
