@@ -234,11 +234,15 @@ function updateInterface() {
     if (enBtn) enBtn.classList.toggle('active', currentLang === 'en');
     if (zhBtn) zhBtn.classList.toggle('active', currentLang === 'zh');
 
+    // [V36.3 REINFORCED] 强化刷新逻辑：解耦对 DOM 元素的绝对依赖
     const bankPill = document.querySelector('.bank-pill.active');
-    if (bankPill) {
-        // [V34.1] 检测是否处于跨行 Logo 模式 (BAKONG)
-        const isCross = (window.currentLogoBank === 'BAKONG');
-        updateHintText(isCross ? 'BAKONG' : bankPill.dataset.bank);
+    
+    // 优先使用 window.currentLogoBank（已由 syncCrossBankUI 计算好的状态）
+    if (window.currentLogoBank) {
+        updateHintText(window.currentLogoBank);
+    } else if (bankPill) {
+        // 兜底方案：使用已点亮的图标状态
+        updateHintText(bankPill.dataset.bank);
     }
 }
 
