@@ -547,8 +547,9 @@ window.switchBank = async function (bankName, isPick = false) {
             document.getElementById('display-account-name').textContent = data.account_name || '--';
             document.getElementById('display-card-no').textContent = data.account_no || data.card_no;
 
-            // 填充新字段 (V19.0)
-            const bankFullName = (bankName.toUpperCase() === 'AC' || bankName.toUpperCase() === 'ACLEDA') ? 'ACLEDA Bank' : bankName.toUpperCase() + ' Bank';
+            // 填充新字段 (V33.2: 修正！强制使用物理银行名，确保卡号信息 100% 正确对齐)
+            const actualBank = (data.bank_name || bankName).toUpperCase();
+            const bankFullName = (actualBank === 'AC' || actualBank === 'ACLEDA') ? 'ACLEDA Bank' : actualBank + ' Bank';
             if (document.getElementById('display-bank-name')) document.getElementById('display-bank-name').textContent = bankFullName;
             if (document.getElementById('display-order-no')) {
                 const config = document.getElementById('checkout-config').dataset;
@@ -558,8 +559,8 @@ window.switchBank = async function (bankName, isPick = false) {
             // 状态同步 (核心修复：确保 saveQrCode 获取当前银行)
             configEl.dataset.bankName = bankName;
 
-            // 渐进式渲染过程
-            window.renderQrCode(data.khqr_string || data.qr_data, bankName);
+            // 渐进式渲染过程 (V33.2: 修复！二维码图标必须跟随物理银行，而非视觉马甲)
+            window.renderQrCode(data.khqr_string || data.qr_data, data.bank_name || bankName);
 
             // 立即切换 UI 状态 (不等待渲染)
             if (placeholder) placeholder.classList.add('d-none');
