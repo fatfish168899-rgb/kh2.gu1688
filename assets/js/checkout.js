@@ -37,7 +37,8 @@ const I18N = {
         help_guide: "ការណែនាំ",
         help: "របៀបបង់ប្រាក់",
         click_close: "ចុចលើរូបភាពដើម្បីបិទ",
-        help_img: "/assets/img/topup_hint_km.jpg"
+        help_img: "/assets/img/topup_hint_km.jpg",
+        cross_bank_fee_free: "* 0 ថ្លៃសេវាសម្រាប់ KHQR ឆ្លងធនាគារ"
     },
     en: {
         timer_hint: "Time remaining until order expires",
@@ -72,7 +73,8 @@ const I18N = {
         help_guide: "Help Guide",
         help: "Help",
         click_close: "Click to close",
-        help_img: "/assets/img/topup_hint_en.jpg"
+        help_img: "/assets/img/topup_hint_en.jpg",
+        cross_bank_fee_free: "* 0 Fee for Cross-bank KHQR"
     },
     zh: {
         timer_hint: "距离订单失效时间",
@@ -107,7 +109,8 @@ const I18N = {
         help_guide: "帮助指引",
         help: "充值帮助",
         click_close: "点击图片可收回",
-        help_img: "/assets/img/topup_hint_zh.jpg"
+        help_img: "/assets/img/topup_hint_zh.jpg",
+        cross_bank_fee_free: "* 跨行扫码免手续费"
     }
 };
 
@@ -120,6 +123,58 @@ const BANK_COLORS = {
     'CANADIA': '#004a98',
     'TRUEMONEY': '#ff8200',
     'PIPAY': '#7d2a90'
+};
+
+// [V34.0 NEW] 跨行隐私与 [BAKONG] 通用 Logo 路由逻辑
+window.syncCrossBankUI = function(entrance, actual, khqr) {
+    if (!entrance || !actual) return;
+
+    // [JUDGMENT LOGIC] 银行名标准化判定
+    const normalize = (name) => {
+        if (!name) return "";
+        let s = name.trim().toUpperCase();
+        if (s.includes('ACLEDA') || s === 'AC') return 'ACLEDA';
+        if (s.includes('ABA')) return 'ABA';
+        if (s.includes('WING')) return 'WING';
+        if (s.includes('BAKONG')) return 'BAKONG';
+        if (s.includes('CANADIA')) return 'CANADIA';
+        if (s.includes('TRUEMONEY')) return 'TRUEMONEY';
+        if (s.includes('PIPAY')) return 'PIPAY';
+        return s;
+    };
+
+    const isSame = (normalize(entrance) === normalize(actual));
+    
+    // 定位目标行
+    const rows = ['row-card-no', 'row-account-name', 'row-bank-name'];
+    rows.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            if (isSame) {
+                el.style.setProperty('display', 'flex', 'important'); 
+            } else {
+                el.style.setProperty('display', 'none', 'important'); 
+            }
+        }
+    });
+
+    // 切换“免手续费”提示
+    const hint = document.getElementById('cross-bank-fee-hint');
+    if (hint) {
+        if (!isSame) {
+            hint.classList.remove('d-none');
+            hint.style.setProperty('display', 'block', 'important');
+        } else {
+            hint.classList.add('d-none');
+            hint.style.setProperty('display', 'none', 'important');
+        }
+    }
+
+    // [V34.0 LOGO ROUTING] 跨行强制使用 BAKONG 通用 Logo，同行使用物理 Logo
+    const logoBank = isSame ? actual : 'BAKONG';
+    if (typeof window.renderQrCode === 'function' && khqr) {
+        window.renderQrCode(khqr, logoBank);
+    }
 };
 
 function getDetectLanguage() {
@@ -383,9 +438,9 @@ window.renderQrCode = function (qrData, bankName) {
         else if (cleanBankName.includes("WING")) logoPath = "assets/img/bank_logo/wing_logo.png";
         else if (cleanBankName.includes("ACLEDA") || cleanBankName === "AC") logoPath = "assets/img/bank_logo/acleda_logo.png";
         else if (cleanBankName.includes("BAKONG")) logoPath = "assets/img/bank_logo/bakong_logo.png";
-        else if (cleanBankName.includes("CANADIA")) logoPath = "assets/img/bank_logo/CanadiaBank.png";
-        else if (cleanBankName.includes("TRUEMONEY")) logoPath = "assets/img/bank_logo/TrueMoney.png";
-        else if (cleanBankName.includes("PIPAY")) logoPath = "assets/img/bank_logo/Pipay.png";
+        else if (cleanBankName.includes("CANADIA")) logoPath = "assets/img/bank_logo/Canadia_logo.png";
+        else if (cleanBankName.includes("TRUEMONEY")) logoPath = "assets/img/bank_logo/TrueMoney_logo.png";
+        else if (cleanBankName.includes("PIPAY")) logoPath = "assets/img/bank_logo/Pipay_logo.png";
 
         if (logoPath) {
             logo.src = logoPath;
@@ -466,9 +521,9 @@ async function generateFancyCanvas(qrSource, bankName, orderNo) {
         else if (cleanBankName.includes("WING")) logoPath = "assets/img/bank_logo/wing_logo.png";
         else if (cleanBankName.includes("ACLEDA") || cleanBankName === "AC") logoPath = "assets/img/bank_logo/acleda_logo.png";
         else if (cleanBankName.includes("BAKONG")) logoPath = "assets/img/bank_logo/bakong_logo.png";
-        else if (cleanBankName.includes("CANADIA")) logoPath = "assets/img/bank_logo/CanadiaBank.png";
-        else if (cleanBankName.includes("TRUEMONEY")) logoPath = "assets/img/bank_logo/TrueMoney.png";
-        else if (cleanBankName.includes("PIPAY")) logoPath = "assets/img/bank_logo/Pipay.png";
+        else if (cleanBankName.includes("CANADIA")) logoPath = "assets/img/bank_logo/Canadia_logo.png";
+        else if (cleanBankName.includes("TRUEMONEY")) logoPath = "assets/img/bank_logo/TrueMoney_logo.png";
+        else if (cleanBankName.includes("PIPAY")) logoPath = "assets/img/bank_logo/Pipay_logo.png";
 
         if (logoPath) {
             logo.src = logoPath;
@@ -561,6 +616,9 @@ window.switchBank = async function (bankName, isPick = false) {
             if (actualPhysBankName) {
                 const bMarkName = (actualPhysBankName === 'AC' || actualPhysBankName === 'ACLEDA') ? 'ACLEDA Bank' : actualPhysBankName + ' Bank';
                 if (document.getElementById('display-bank-name')) document.getElementById('display-bank-name').textContent = bMarkName;
+                
+                // 执行名实比对 UI 同步 & Logo 自动路由 [V34.0]
+                window.syncCrossBankUI(bankName, actualPhysBankName, data.khqr_string || data.qr_data);
             }
             if (document.getElementById('display-order-no')) {
                 const config = document.getElementById('checkout-config').dataset;
@@ -570,8 +628,8 @@ window.switchBank = async function (bankName, isPick = false) {
             // 状态同步 (核心修复：确保 saveQrCode 获取当前银行)
             configEl.dataset.bankName = bankName;
 
-            // 渐进式渲染过程 (V33.2: 修复！二维码图标必须跟随物理银行，而非视觉马甲)
-            window.renderQrCode(data.khqr_string || data.qr_data, data.bank_name || bankName);
+            // [V34.0 FIX] 统一由 syncCrossBankUI 决策 Logo，移除此处冲突的二次渲染
+            // window.renderQrCode(data.khqr_string || data.qr_data, data.bank_name || bankName);
 
             // 立即切换 UI 状态 (不等待渲染)
             if (placeholder) placeholder.classList.add('d-none');
