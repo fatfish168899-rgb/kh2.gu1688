@@ -38,7 +38,8 @@ const I18N = {
         help: "របៀបបង់ប្រាក់",
         click_close: "ចុចលើរូបភាពដើម្បីបិទ",
         help_img: "/assets/img/topup_hint_km.jpg",
-        cross_bank_fee_free: "* 0 ថ្លៃសេវាសម្រាប់ KHQR ឆ្លងធនាគារ"
+        any_bank: "ធនាគារណាមួយ",
+        cross_bank_fee_free: " 0 ថ្លៃសេវាសម្រាប់ KHQR ឆ្លងធនាគារ"
     },
     en: {
         timer_hint: "Time remaining until order expires",
@@ -74,7 +75,8 @@ const I18N = {
         help: "Help",
         click_close: "Click to close",
         help_img: "/assets/img/topup_hint_en.jpg",
-        cross_bank_fee_free: "* 0 Fee for Cross-bank KHQR"
+        any_bank: "Any Bank",
+        cross_bank_fee_free: " 0 Fee for Cross-bank KHQR"
     },
     zh: {
         timer_hint: "距离订单失效时间",
@@ -110,7 +112,8 @@ const I18N = {
         help: "充值帮助",
         click_close: "点击图片可收回",
         help_img: "/assets/img/topup_hint_zh.jpg",
-        cross_bank_fee_free: "* 跨行扫码免手续费"
+        any_bank: "任何银行",
+        cross_bank_fee_free: " 跨行扫码免手续费"
     }
 };
 
@@ -126,7 +129,7 @@ const BANK_COLORS = {
 };
 
 // [V34.0 NEW] 跨行隐私与 [BAKONG] 通用 Logo 路由逻辑
-window.syncCrossBankUI = function(entrance, actual, khqr) {
+window.syncCrossBankUI = function (entrance, actual, khqr) {
     if (!entrance || !actual) return;
 
     // [JUDGMENT LOGIC] 银行名标准化判定
@@ -144,16 +147,16 @@ window.syncCrossBankUI = function(entrance, actual, khqr) {
     };
 
     const isSame = (normalize(entrance) === normalize(actual));
-    
+
     // 定位目标行
     const rows = ['row-card-no', 'row-account-name', 'row-bank-name'];
     rows.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             if (isSame) {
-                el.style.setProperty('display', 'flex', 'important'); 
+                el.style.setProperty('display', 'flex', 'important');
             } else {
-                el.style.setProperty('display', 'none', 'important'); 
+                el.style.setProperty('display', 'none', 'important');
             }
         }
     });
@@ -170,8 +173,10 @@ window.syncCrossBankUI = function(entrance, actual, khqr) {
         }
     }
 
-    // [V34.0 LOGO ROUTING] 跨行强制使用 BAKONG 通用 Logo，同行使用物理 Logo
+    // [V34.1 LOGO ROUTING] 跨行强制使用 BAKONG 通用 Logo，同行使用物理 Logo
     const logoBank = isSame ? actual : 'BAKONG';
+    window.currentLogoBank = logoBank; // 为 updateHintText 存储状态
+    
     if (typeof window.renderQrCode === 'function' && khqr) {
         window.renderQrCode(khqr, logoBank);
     }
@@ -231,7 +236,9 @@ function updateInterface() {
 
     const bankPill = document.querySelector('.bank-pill.active');
     if (bankPill) {
-        updateHintText(bankPill.dataset.bank);
+        // [V34.1] 检测是否处于跨行 Logo 模式 (BAKONG)
+        const isCross = (window.currentLogoBank === 'BAKONG');
+        updateHintText(isCross ? 'BAKONG' : bankPill.dataset.bank);
     }
 }
 
@@ -239,8 +246,12 @@ function updateHintText(bankName) {
     const hintEl = document.getElementById('scan-hint-text');
     if (!hintEl) return;
     const cleanName = bankName.toUpperCase();
+    
+    // 如果是通用巴孔 Logo，文案改为“任何银行”
+    const bankDisplayName = (cleanName === 'BAKONG') ? (I18N[currentLang].any_bank || 'Any Bank') : cleanName;
+    
     const key = (cleanName.includes("AC") || cleanName.includes("ACLEDA")) ? 'must_use' : 'recom_use';
-    let text = I18N[currentLang][key].replace('{{bank}}', cleanName);
+    let text = I18N[currentLang][key].replace('{{bank}}', bankDisplayName);
     const icon = key === 'must_use' ? 'fa-triangle-exclamation' : 'fa-mobile-screen-button';
     hintEl.innerHTML = `<i class="fa-solid ${icon} me-1"></i> ${text}`;
 }
@@ -274,7 +285,7 @@ window.togglePanel = function (panelId) {
     panels.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        
+
         if (id === panelId) {
             if (el.classList.contains('active')) {
                 el.classList.remove('active');
@@ -307,7 +318,7 @@ window.closeAllPanels = function () {
         if (el) el.classList.remove('active');
     });
     document.getElementById('help-panel-tab')?.classList.remove('active');
-    
+
     const overlay = document.getElementById('panel-overlay');
     if (overlay) {
         overlay.classList.remove('show');
@@ -616,7 +627,7 @@ window.switchBank = async function (bankName, isPick = false) {
             if (actualPhysBankName) {
                 const bMarkName = (actualPhysBankName === 'AC' || actualPhysBankName === 'ACLEDA') ? 'ACLEDA Bank' : actualPhysBankName + ' Bank';
                 if (document.getElementById('display-bank-name')) document.getElementById('display-bank-name').textContent = bMarkName;
-                
+
                 // 执行名实比对 UI 同步 & Logo 自动路由 [V34.0]
                 window.syncCrossBankUI(bankName, actualPhysBankName, data.khqr_string || data.qr_data);
             }
