@@ -25,6 +25,10 @@ const I18N = {
         auto_close: "ទំព័រនឹងបិទដោយស្វ័យប្រវត្តក្នុងរយៈពេល {{sec}} វិនាទី...",
         save_qr: "រក្សាទុកកូដ QR ទៅកាន់អាល់ប៊ុម",
         save_hint: "* បន្ទាប់ពីរក្សាទុក សូមបើក App ធនាគារ ហើយជ្រើសរើសរូបភាព",
+        ios_long_press_hint: "ចុចរឹងលើរូប QR ខាងក្រោម រួចរើស «រក្សាទុករូបភាព» ដើម្បីរក្សាទុកទៅអាល់ប៊ុម",
+        ios_close_btn: "បិទ",
+        save_shared: "បានចែករំលែក",
+        ios_preview_toast: "បានបើកមុខងារមើល សូមចុចរឹងលើរូបដើម្បីរក្សាទុក",
         assigning: "កំពុងបែងចែកគណនី...",
         no_bank_card: "ធនាគារនេះមិនមានគណនីទេ សូមជ្រើសរើសធនាគារផ្សេងទៀត",
         net_err: "កំហុសបណ្តាញ សូមព្យាយាមម្តងទៀត",
@@ -62,6 +66,10 @@ const I18N = {
         auto_close: "Page will close automatically in {{sec}} seconds...",
         save_qr: "Save QR to Album",
         save_hint: "* After saving, open banking app and select this photo",
+        ios_long_press_hint: "Touch and hold the QR image below, then tap “Save Image” to save to Photos.",
+        ios_close_btn: "Close",
+        save_shared: "Shared",
+        ios_preview_toast: "Preview opened — long-press the QR to save.",
         assigning: "Assigning account...",
         no_bank_card: "No account for this bank, please choose another",
         net_err: "Network error, please try again",
@@ -99,6 +107,10 @@ const I18N = {
         auto_close: "页面将在 {{sec}} 秒内自动关闭...",
         save_qr: "保存二维码到相册",
         save_hint: "* 保存后打开银行 App，选择该相册图片支付",
+        ios_long_press_hint: "请长按下方二维码图片，选择「存储图像」保存到相册（iPhone 不支持直接下载文件）。",
+        ios_close_btn: "关闭",
+        save_shared: "已分享，可在相册或文件中查看",
+        ios_preview_toast: "已打开预览，请长按图片保存到相册",
         assigning: "正在为您分配收款账号...",
         no_bank_card: "该银行暂时无可用账号，请选择其他银行",
         net_err: "网络异常，请刷新后重试",
@@ -123,9 +135,9 @@ const BANK_COLORS = {
     'ACLEDA': '#143C6D',
     'AC': '#143C6D',
     'BAKONG': '#ED1C24',
-    'CANADIA': '#004a98',
+    'CANADIA': '#c41230',
     'TRUEMONEY': '#ff8200',
-    'PIPAY': '#7d2a90'
+    'PIPAY': '#e20074'
 };
 
 // [V34.0 NEW] 跨行隐私与 [BAKONG] 通用 Logo 路由逻辑
@@ -558,6 +570,49 @@ async function generateFancyCanvas(qrSource, bankName, orderNo) {
     });
 }
 
+function paybankIsIOSDevice() {
+    const ua = navigator.userAgent || '';
+    if (/iPad|iPhone|iPod/i.test(ua)) return true;
+    return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+}
+
+async function paybankTryShareQrPng(dataUrl, filename) {
+    try {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], filename, { type: 'image/png' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'KHQR' });
+            return true;
+        }
+    } catch (e) { /* 用户取消分享或不可用 */ }
+    return false;
+}
+
+function paybankOpenIosQrOverlay(dataUrl) {
+    const L = I18N[currentLang] || I18N.en;
+    let wrap = document.getElementById('paybank-ios-qr-overlay');
+    if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'paybank-ios-qr-overlay';
+        wrap.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.9);display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+        wrap.innerHTML = '<p id="paybank-ios-qr-hint" style="color:#fff;text-align:center;font-size:15px;line-height:1.55;margin:0 0 14px;max-width:340px;"></p>' +
+            '<div style="max-width:min(92vw,340px);background:#fff;border-radius:12px;padding:12px;box-sizing:border-box;">' +
+            '<img id="paybank-ios-qr-img" alt="QR" style="display:block;width:100%;height:auto;border-radius:8px;"/>' +
+            '</div>' +
+            '<button type="button" id="paybank-ios-qr-close" style="margin-top:18px;padding:10px 28px;border-radius:999px;border:none;background:#fff;color:#222;font-size:15px;cursor:pointer;font-weight:600;"></button>';
+        document.body.appendChild(wrap);
+        wrap.addEventListener('click', (e) => {
+            if (e.target === wrap) wrap.style.display = 'none';
+        });
+        document.getElementById('paybank-ios-qr-close').addEventListener('click', () => { wrap.style.display = 'none'; });
+    }
+    document.getElementById('paybank-ios-qr-hint').textContent = L.ios_long_press_hint || L.save_hint;
+    document.getElementById('paybank-ios-qr-img').src = dataUrl;
+    document.getElementById('paybank-ios-qr-close').textContent = L.ios_close_btn || L.click_close || 'OK';
+    wrap.style.display = 'flex';
+}
+
 window.saveQrCode = async function () {
     const qrContainer = document.getElementById("qrcode");
     const source = qrContainer.querySelector('canvas') || qrContainer.querySelector('img');
@@ -566,14 +621,27 @@ window.saveQrCode = async function () {
     const config = document.getElementById('checkout-config').dataset;
     const bankName = config.bankName || 'BANK';
     const orderNo = config.orderNo || 'ORDER';
+    const filename = `${bankName.toUpperCase()}_${orderNo}.png`;
+    const L = I18N[currentLang] || I18N.en;
 
-    showToast(I18N[currentLang].assigning || "Processing...");
+    showToast(L.assigning || "Processing...");
 
     const dataUrl = await generateFancyCanvas(source, bankName, orderNo);
 
+    if (paybankIsIOSDevice()) {
+        const shared = await paybankTryShareQrPng(dataUrl, filename);
+        if (shared) {
+            showToast(L.save_shared || "OK");
+            return;
+        }
+        paybankOpenIosQrOverlay(dataUrl);
+        showToast(L.ios_preview_toast || "OK");
+        return;
+    }
+
     const link = document.createElement('a');
     link.href = dataUrl;
-    link.download = `${bankName.toUpperCase()}_${orderNo}.png`;
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
