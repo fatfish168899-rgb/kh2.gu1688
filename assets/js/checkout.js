@@ -472,6 +472,8 @@ window.renderQrCode = function (qrData, bankName) {
         else if (cleanBankName.includes("CANADIA")) logoPath = "assets/img/bank_logo/Canadia_logo.png";
         else if (cleanBankName.includes("TRUEMONEY")) logoPath = "assets/img/bank_logo/TrueMoney_logo.png";
         else if (cleanBankName.includes("PIPAY")) logoPath = "assets/img/bank_logo/Pipay_logo.png";
+        else if (cleanBankName.includes("AMK")) logoPath = "assets/img/bank_logo/Amk_logo.png";
+        else if (cleanBankName.includes("AMRET")) logoPath = "assets/img/bank_logo/Amret_logo.png";
 
         if (logoPath) {
             logo.src = logoPath;
@@ -555,6 +557,8 @@ async function generateFancyCanvas(qrSource, bankName, orderNo) {
         else if (cleanBankName.includes("CANADIA")) logoPath = "assets/img/bank_logo/Canadia_logo.png";
         else if (cleanBankName.includes("TRUEMONEY")) logoPath = "assets/img/bank_logo/TrueMoney_logo.png";
         else if (cleanBankName.includes("PIPAY")) logoPath = "assets/img/bank_logo/Pipay_logo.png";
+        else if (cleanBankName.includes("AMK")) logoPath = "assets/img/bank_logo/Amk_logo.png";
+        else if (cleanBankName.includes("AMRET")) logoPath = "assets/img/bank_logo/Amret_logo.png";
 
         if (logoPath) {
             logo.src = logoPath;
