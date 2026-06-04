@@ -137,7 +137,9 @@ const BANK_COLORS = {
     'BAKONG': '#ED1C24',
     'CANADIA': '#c41230',
     'TRUEMONEY': '#ff8200',
-    'PIPAY': '#e20074'
+    'PIPAY': '#7d2a90',
+    'AMK': '#f58220',
+    'AMRET': '#0082c1'
 };
 
 // [V34.0 NEW] 跨行隐私与 [BAKONG] 通用 Logo 路由逻辑
@@ -155,6 +157,8 @@ window.syncCrossBankUI = function (entrance, actual, khqr) {
         if (s.includes('CANADIA')) return 'CANADIA';
         if (s.includes('TRUEMONEY')) return 'TRUEMONEY';
         if (s.includes('PIPAY')) return 'PIPAY';
+        if (s.includes('AMK')) return 'AMK';
+        if (s.includes('AMRET')) return 'AMRET';
         return s;
     };
 
